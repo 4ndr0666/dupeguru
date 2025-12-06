@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
 # C extensions
 *.so
@@ -97,6 +98,42 @@ cython_debug/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# CMake related files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+_CPack_Packages/
+DartConfiguration.tcl
+*.dir/
+*.o
+*.d
+*.gcno
+*.gcda
+*.gcov
+*.su
+*.i
+*.ti
+*.rc
+*.res
+*.obj
+*.lo
+*.la
+*.pyo
+*.iml
+*.ipr
+*.iws
+
+# General build artifacts and temporary files
+*.log
+*.bak
+*~
+*.swp
+temp/
+tmp/
+.idea/
 
 # dupeGuru Specific
 /qt/*_rc.py
