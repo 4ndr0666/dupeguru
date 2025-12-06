@@ -6,6 +6,7 @@
 # http://www.gnu.gnu.org/licenses/gpl-3.0.html
 
 import sys
+import semantic_version
 import os.path as op
 import gc
 

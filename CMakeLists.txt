@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 project(dupeGuru VERSION 0.1.0 LANGUAGES C) # LANGUAGES C because of the .c files in core/pe/modules
 
 # Find Python and its components
+set(Python3_FIND_VIRTUALENV NEVER)
+set(Python3_FIND_STRATEGY LOCATION)
+set(Python3_ROOT_DIR "/usr")
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "Python3 interpreter: ${Python3_EXECUTABLE}")
 message(STATUS "Python3 libraries: ${Python3_LIBRARIES}")
 message(STATUS "Python3 includes: ${Python3_INCLUDE_DIRS}")
+message(STATUS "Python3_SITELIB: ${Python3_SITELIB}")
 
 # Find PyQt5 for pyrcc5
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
