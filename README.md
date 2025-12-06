@@ -25,69 +25,96 @@ This folder contains the source for dupeGuru. Its documentation is in `help`, bu
 
 ## How to build dupeGuru from source
 
-### Windows & macOS specific additional instructions
-For windows instructions see the [Windows Instructions](Windows.md).
-
-For macos instructions (qt version) see the [macOS Instructions](macos.md).
-
 ### Prerequisites
-* [Python 3.7+][python]
-* PyQt5
+*   Python 3.8+
+*   pip
+*   setuptools
+*   PyQt5
+*   CMake
 
-### System Setup
-When running in a linux based environment the following system packages or equivalents are needed to build:
-* python3-pyqt5
-* pyqt5-dev-tools (on some systems, see note)
-* python3-venv (only if using a virtual environment)
-* python3-dev
-* build-essential
+### System Setup (Arch Linux)
+On Arch Linux, install the necessary packages using `pacman`:
 
-Note: On some linux systems pyrcc5 is not put on the path when installing python3-pyqt5, this will cause some issues with the resource files (and icons). These systems should have a respective pyqt5-dev-tools package, which should also be installed. The presence of pyrcc5 can be checked with `which pyrcc5`.  Debian based systems need the extra package, and Arch does not.
+```bash
+sudo pacman -S python python-pip python-setuptools python-wheel pyqt5 cmake
+```
 
-To create packages the following are also needed:
-* python3-setuptools
-* debhelper
+### Building with CMake
 
-### Building with Make
-dupeGuru comes with a makefile that can be used to build and run:
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/arsenetar/dupeguru.git
+    cd dupeguru
+    ```
 
-    $ make && make run
+2.  Create and activate a Python virtual environment:
+    ```bash
+    python -m venv env
+    source env/bin/activate
+    ```
 
-### Building without Make
+3.  Install Python dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-    $ cd <dupeGuru directory>
-    $ python3 -m venv --system-site-packages ./env
-    $ source ./env/bin/activate
-    $ pip install -r requirements.txt
-    $ python build.py
-    $ python run.py
+4.  Build the project using CMake:
+    ```bash
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build . --target install --prefix ../install
+    ```
 
-### Generating Debian/Ubuntu package
-To generate packages the extra requirements in requirements-extra.txt must be installed, the
-steps are as follows:
+5.  Run the application:
+    ```bash
+    # Ensure you are in the project root directory
+    source env/bin/activate # If not already active
+    python run.py
+    ```
 
-    $ cd <dupeGuru directory>
-    $ python3 -m venv --system-site-packages ./env
-    $ source ./env/bin/activate
-    $ pip install -r requirements.txt -r requirements-extra.txt
-    $ python build.py --clean
-    $ python package.py
+### Generating Arch Linux Package (PKGBUILD)
+To generate an Arch Linux package, you would typically create a `PKGBUILD` file. Below is an example `PKGBUILD` for dupeGuru. Remember to replace `sha256sums=('SKIP')` with the actual checksum of the source tarball.
 
-This can be made a one-liner (once in the directory) as:
+```PKGBUILD
+# Contributor: Your Name <your_email@example.com>
+pkgname=dupeguru
+pkgver=4.3.1
+pkgrel=1
+pkgdesc="A cross-platform GUI tool to find duplicate files."
+arch=('x86_64')
+url="https://dupeguru.voltaicideas.net/"
+license=('GPL3')
+depends=('python' 'python-pyqt5')
+makedepends=('cmake' 'python-setuptools' 'python-wheel' 'python-pip')
+_pkgname=dupeguru # Used for source tarball naming
 
-    $ bash -c "python3 -m venv --system-site-packages env && source env/bin/activate && pip install -r requirements.txt -r requirements-extra.txt && python build.py --clean && python package.py"
+source=("${_pkgname}-${pkgver}.tar.gz::https://github.com/arsenetar/dupeguru/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP') # IMPORTANT: Replace 'SKIP' with the actual sha256sum of the downloaded source tarball!
 
-## Running tests
+build() {
+  # Create a build directory
+  mkdir -p build
+  cd build
 
-The complete test suite is run with [Tox 1.7+][tox]. If you have it installed system-wide, you
-don't even need to set up a virtualenv. Just `cd` into the root project folder and run `tox`.
+  # Configure CMake
+  cmake ../${_pkgname}-${pkgver} \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPYTHON_EXECUTABLE=/usr/bin/python
 
-If you don't have Tox system-wide, install it in your virtualenv with `pip install tox` and then
-run `tox`.
+  # Build the project
+  cmake --build . 
+}
 
-You can also run automated tests without Tox. Extra requirements for running tests are in
-`requirements-extra.txt`. So, you can do `pip install -r requirements-extra.txt` inside your
-virtualenv and then `py.test core hscommon`
+package() {
+  cd build
+  # Install the built files to the fakeroot environment
+  cmake --install . --prefix="${pkgdir}/usr"
+  # Python specific install, if not handled by cmake --install
+  # python -m pip install ../${_pkgname}-${pkgver} --root="${pkgdir}" --optimize=1 --no-deps
+}
+```
 
 [dupeguru]: https://dupeguru.voltaicideas.net/
 [cross-toolkit]: http://www.hardcoded.net/articles/cross-toolkit-software
