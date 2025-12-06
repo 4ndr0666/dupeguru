@@ -15,7 +15,7 @@
 On Arch Linux, install the necessary packages using `pacman`:
 
 ```bash
-sudo pacman -S python python-pip python-setuptools python-wheel pyqt5 cmake
+sudo pacman -S python python-pip python-setuptools python-wheel python-pyqt5 cmake python-distro python-mutagen python-polib python-semantic-version python-send2trash python-sphinx python-xxhash
 ```
 
 ### Building with CMake
@@ -26,13 +26,7 @@ sudo pacman -S python python-pip python-setuptools python-wheel pyqt5 cmake
     cd dupeguru
     ```
 
-2.  Create and activate a Python virtual environment:
-    ```bash
-    python3 -m venv .env
-    source .env/bin/activate
-    ```
-
-3.  Build the project using CMake:
+2.  Build the project using CMake:
     ```bash
     mkdir build
     cd build
@@ -41,7 +35,7 @@ sudo pacman -S python python-pip python-setuptools python-wheel pyqt5 cmake
     sudo cmake --install .
     ```
 
-4.  Run the application:
+3.  Run the application:
     ```bash
     dupeguru
     ```
