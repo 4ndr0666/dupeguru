@@ -32,12 +32,6 @@ add_custom_target(
     COMMENT "Building Qt resources using pyrcc5"
 )
 
-# A main build target that depends on both Python extensions and Qt resources
-add_custom_target(
-    dupeguru_build ALL
-    DEPENDS build_python_extensions build_qt_resources
-)
-
 # Optional: Add a 'run' target for convenience
 add_custom_target(
     run_dupeguru
@@ -45,3 +39,11 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running dupeGuru"
 )
+
+# Install commands
+install(PROGRAMS run.py DESTINATION bin RENAME dupeguru)
+install(DIRECTORY core DESTINATION ${Python3_SITELIB})
+install(DIRECTORY hscommon DESTINATION ${Python3_SITELIB})
+install(DIRECTORY qt DESTINATION ${Python3_SITELIB})
+install(DIRECTORY images locale help DESTINATION share/${PROJECT_NAME})
+install(FILES pkg/dupeguru.desktop DESTINATION share/applications)

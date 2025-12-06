@@ -9,15 +9,16 @@
 *   pip
 *   setuptools
 *   PyQt5
+*   CMake
 
 ### System Setup (Arch Linux)
 On Arch Linux, install the necessary packages using `pacman`:
 
 ```bash
-sudo pacman -S python python-pip python-setuptools python-wheel pyqt5
+sudo pacman -S python python-pip python-setuptools python-wheel pyqt5 cmake
 ```
 
-### Building and Installing with Pip
+### Building with CMake
 
 1.  Clone the repository:
     ```bash
@@ -31,9 +32,13 @@ sudo pacman -S python python-pip python-setuptools python-wheel pyqt5
     source .env/bin/activate
     ```
 
-3.  Install dupeGuru:
+3.  Build the project using CMake:
     ```bash
-    pip install .
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build . 
+    sudo cmake --install .
     ```
 
 4.  Run the application:
