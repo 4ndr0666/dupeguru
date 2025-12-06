@@ -1,27 +1,6 @@
-# dupeGuru
+# Dupeguru
 
-[dupeGuru][dupeguru] is a cross-platform (Linux, OS X, Windows) GUI tool to find duplicate files in
-a system. It is written mostly in Python 3 and uses [qt](https://www.qt.io/) for the UI.
-
-## Current status
-Still looking for additional help especially with regards to:
-* OSX maintenance: reproducing bugs, packaging verification.
-* Linux maintenance: reproducing bugs, maintaining PPA repository, Debian package, rpm package.
-* Translations: updating missing strings, transifex project at https://www.transifex.com/voltaicideas/dupeguru-1
-* Documentation: keeping it up-to-date.
-
-## Contents of this folder
-
-This folder contains the source for dupeGuru. Its documentation is in `help`, but is also
-[available online][documentation] in its built form. Here's how this source tree is organized:
-
-* core: Contains the core logic code for dupeGuru. It's Python code.
-* qt: UI code for the Qt toolkit. It's written in Python and uses PyQt.
-* images: Images used by the different UI codebases.
-* pkg: Skeleton files required to create different packages
-* help: Help document, written for Sphinx.
-* locale: .po files for localization.
-* hscommon: A collection of helpers used across HS applications.
+This is the work of [Arsentar](https://github.com/arsenetar/dupeguru/) so all credit to them. This is just a modernized and Arch Linux tailored build.
 
 ## How to build dupeGuru from source
 
@@ -117,8 +96,4 @@ package() {
 ```
 
 [dupeguru]: https://dupeguru.voltaicideas.net/
-[cross-toolkit]: http://www.hardcoded.net/articles/cross-toolkit-software
 [documentation]: http://dupeguru.voltaicideas.net/help/en/
-[python]: http://www.python.org/
-[pyqt]: http://www.riverbankcomputing.com
-[tox]: https://tox.readthedocs.org/en/latest/
