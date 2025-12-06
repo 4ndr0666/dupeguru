@@ -1,6 +1,6 @@
 # Dupeguru
 
-This is the work of [Arsentar](https://github.com/arsenetar/dupeguru/) so all credit to them. This is just a modernized and Arch Linux tailored build.
+>This is the work of [Arsentar](https://github.com/arsenetar/dupeguru/) so all credit to them. This is just a modernized and Arch Linux tailored build.
 
 ## How to build dupeGuru from source
 
