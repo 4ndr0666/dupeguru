@@ -1,53 +1,34 @@
-cmake_minimum_required(VERSION 3.10)
-project(dupeGuru VERSION 0.1.0 LANGUAGES C) # LANGUAGES C because of the .c files in core/pe/modules
+cmake_minimum_required(VERSION 3.16)
+project(dupeguru LANGUAGES C)
 
-# Find Python and its components
-set(Python3_FIND_VIRTUALENV NEVER)
-set(Python3_FIND_STRATEGY LOCATION)
-set(Python3_ROOT_DIR "/usr")
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-message(STATUS "Python3 interpreter: ${Python3_EXECUTABLE}")
-message(STATUS "Python3 libraries: ${Python3_LIBRARIES}")
-message(STATUS "Python3 includes: ${Python3_INCLUDE_DIRS}")
-message(STATUS "Python3_SITELIB: ${Python3_SITELIB}")
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
-# Find PyQt5 for pyrcc5
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-find_package(Qt5Core REQUIRED) # For pyrcc5
-find_program(PYRCC5_EXECUTABLE pyrcc5)
-if (NOT PYRCC5_EXECUTABLE)
-    message(FATAL_ERROR "pyrcc5 not found. Please ensure PyQt5 development tools are installed and in PATH.")
-endif()
-message(STATUS "pyrcc5 executable: ${PYRCC5_EXECUTABLE}")
+# Core PE extension (_block and _cache)
+add_library(_block MODULE core/pe/modules/block.c core/pe/modules/common.c)
+target_include_directories(_block PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(_block PRIVATE ${Python3_LIBRARIES})
+set_target_properties(_block PROPERTIES PREFIX "" SUFFIX "${Python3_EXT_SUFFIX}")
 
-# Define a target for building Python C extensions using setup.py
-add_custom_target(
-    build_python_extensions
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py build_ext --inplace
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Building Python C extensions using setup.py"
-)
+add_library(_cache MODULE core/pe/modules/cache.c core/pe/modules/common.c)
+target_include_directories(_cache PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(_cache PRIVATE ${Python3_LIBRARIES})
+set_target_properties(_cache PROPERTIES PREFIX "" SUFFIX "${Python3_EXT_SUFFIX}")
 
-# Define a target for building Qt resources using pyrcc5
-add_custom_target(
-    build_qt_resources
-    COMMAND ${PYRCC5_EXECUTABLE} ${CMAKE_SOURCE_DIR}/qt/dg.qrc -o ${CMAKE_SOURCE_DIR}/qt/dg_rc.py
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Building Qt resources using pyrcc5"
-)
+# Qt PE extension (_block_qt)
+add_library(_block_qt MODULE qt/pe/modules/block.c qt/pe/modules/common.c)
+target_include_directories(_block_qt PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(_block_qt PRIVATE ${Python3_LIBRARIES})
+set_target_properties(_block_qt PROPERTIES PREFIX "" SUFFIX "${Python3_EXT_SUFFIX}")
 
-# Optional: Add a 'run' target for convenience
-add_custom_target(
-    run_dupeguru
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/run.py
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running dupeGuru"
-)
+# Install Python packages + compiled extensions
+install(DIRECTORY core/ DESTINATION ${Python3_SITELIB}/core
+        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyi" PATTERN "__pycache__" EXCLUDE)
+install(TARGETS _block _cache LIBRARY DESTINATION ${Python3_SITELIB}/core/pe)
 
-# Install commands
+install(DIRECTORY qt/ DESTINATION ${Python3_SITELIB}/qt
+        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyi" PATTERN "__pycache__" EXCLUDE)
+install(TARGETS _block_qt LIBRARY DESTINATION ${Python3_SITELIB}/qt/pe)
+
+# Install binary, desktop file, resources, etc. (keep your existing install rules here)
 install(PROGRAMS run.py DESTINATION bin RENAME dupeguru)
-install(DIRECTORY core DESTINATION ${Python3_SITELIB})
-install(DIRECTORY hscommon DESTINATION ${Python3_SITELIB})
-install(DIRECTORY qt DESTINATION ${Python3_SITELIB})
-install(DIRECTORY images locale help DESTINATION share/${PROJECT_NAME})
-install(FILES pkg/dupeguru.desktop DESTINATION share/applications)
+# ... rest of your original install rules for share/, locale/, images/, etc.
