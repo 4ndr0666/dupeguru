@@ -1,16 +1,16 @@
 # dupeguru
 
-Modernized Arch Linux fork of the original dupeGuru by Arsentar / Voltaic Ideas.  
-All credit to the upstream authors.
+Modern Arch Linux tailored fork of dupeGuru.  
+All credit to the original authors at [arsenetar/dupeguru](https://github.com/arsenetar/dupeguru) and Voltaic Ideas.
 
-Fast duplicate finder for pictures, music, and standard files with native C extensions.
+Fast duplicate file finder with native C extensions for pictures, music, and standard files.
 
-## Build from Source (CMake only)
+## Build from Source (CMake only — recommended)
 
 ### Prerequisites (Arch Linux)
 ```bash
-sudo pacman -S python python-pyqt5 cmake python-distro python-mutagen python-polib \
-               python-send2trash python-xxhash
+sudo pacman -S python python-pyqt5 cmake python-distro python-mutagen \
+               python-polib python-send2trash python-xxhash
 ```
 
 ### Build & Install
@@ -25,14 +25,17 @@ cmake --build . --verbose
 sudo cmake --install .
 ```
 
-Run:
+Run the app:
 ```bash
 dupeguru
 ```
 
+C extensions (`_block`, `_cache`, `_block_qt`) are automatically compiled during the build.
+
 ## Development
-- C extensions are automatically compiled from `core/pe/modules/` and `qt/pe/modules/`
-- Rebuild with the CMake commands above after any changes to `.c` files
+- Edit Python code in `core/` and `qt/`
+- Modify C sources in `core/pe/modules/` or `qt/pe/modules/`
+- Rebuild with the CMake commands above after changes
 
 ## Packaging
 A clean PKGBUILD template is available in the `pkg/` directory.
