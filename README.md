@@ -1,87 +1,49 @@
-# Dupeguru
+# dupeguru
 
->This is the work of [Arsentar](https://github.com/arsenetar/dupeguru/) so all credit to them. This is just a modernized and Arch Linux tailored build.
+This is a modernized, Arch Linux-tailored fork of [arsenetar/dupeguru](https://github.com/arsenetar/dupeguru/). All credit to the original authors.
 
-## How to build dupeGuru from source
+## Features
+- Native C extensions (_block, _cache, _block_qt) compiled at build time for any Python version
+- Pure CMake build system (no setuptools hacks)
+- Full PyQt5-based duplicate finder (pictures, music, standard files)
 
-### Prerequisites
-*   Python 3.8+
-*   pip
-*   setuptools
-*   PyQt5
-*   CMake
+## Building from Source (Recommended)
 
-### System Setup (Arch Linux)
-On Arch Linux, install the necessary packages using `pacman`:
-
+### Prerequisites (Arch Linux)
 ```bash
-sudo pacman -S python python-pip python-setuptools python-wheel python-pyqt5 cmake python-distro python-mutagen python-polib python-semantic-version python-send2trash python-sphinx python-xxhash
+sudo pacman -S python python-pip python-pyqt5 cmake python-distro python-mutagen python-polib python-send2trash python-xxhash
 ```
 
-### Building with CMake
+### Build & Install
+```bash
+git clone https://github.com/4ndr0666/dupeguru.git
+cd dupeguru
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/4ndr0666/dupeguru.git
-    cd dupeguru
-    ```
-
-2.  Build the project using CMake:
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . 
-    sudo cmake --install .
-    ```
-
-3.  Run the application:
-    ```bash
-    dupeguru
-    ```
-
-### Generating Arch Linux Package (PKGBUILD)
-To generate an Arch Linux package, you would typically create a `PKGBUILD` file. Below is an example `PKGBUILD` for dupeGuru. Remember to replace `sha256sums=('SKIP')` with the actual checksum of the source tarball.
-
-```PKGBUILD
-# Contributor: Your Name <your_email@example.com>
-pkgname=dupeguru
-pkgver=4.3.1
-pkgrel=1
-pkgdesc="A cross-platform GUI tool to find duplicate files."
-arch=('x86_64')
-url="https://dupeguru.voltaicideas.net/"
-license=('GPL3')
-depends=('python' 'python-pyqt5')
-makedepends=('cmake' 'python-setuptools' 'python-wheel' 'python-pip')
-_pkgname=dupeguru # Used for source tarball naming
-
-source=("${_pkgname}-${pkgver}.tar.gz::https://github.com/arsenetar/dupeguru/archive/v${pkgver}.tar.gz")
-sha256sums=('SKIP') # IMPORTANT: Replace 'SKIP' with the actual sha256sum of the downloaded source tarball!
-
-build() {
-  # Create a build directory
-  mkdir -p build
-  cd build
-
-  # Configure CMake
-  cmake ../${_pkgname}-${pkgver} \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DPYTHON_EXECUTABLE=/usr/bin/python
-
-  # Build the project
-  cmake --build . 
-}
-
-package() {
-  cd build
-  # Install the built files to the fakeroot environment
-  cmake --install . --prefix="${pkgdir}/usr"
-  # Python specific install, if not handled by cmake --install
-  # python -m pip install ../${_pkgname}-${pkgver} --root="${pkgdir}" --optimize=1 --no-deps
-}
+rm -rf build/
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --verbose
+sudo cmake --install .
 ```
 
-[dupeguru]: https://dupeguru.voltaicideas.net/
-[documentation]: http://dupeguru.voltaicideas.net/help/en/
+Run:
+```bash
+dupeguru
+```
+
+## Development
+
+- Edit Python files in `core/` and `qt/`
+- C extensions live in `core/pe/modules/` and `qt/pe/modules/`
+- Re-run the CMake build after any C changes
+
+## Packaging (Arch Linux PKGBUILD example)
+
+See the `pkg/` directory for a ready-to-use PKGBUILD template.
+
+## License
+GPL-3.0 (same as upstream)
+
+---
+
+**Maintained by 4ndr0666** — issues and PRs welcome!
