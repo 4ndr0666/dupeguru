@@ -1,36 +1,34 @@
-# Python
+# Build artifacts
+build/
+dist/
+*.egg-info/
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
-*.egg-info/
-dist/
-build/
-*.egg
 
 # CMake
 CMakeCache.txt
 CMakeFiles/
 CMakeScripts/
-Testing/
 Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
-CTestTestfile.cmake
 
-# Personal / env
-env
+# Personal / virtualenvs
+env/
 .venv/
 venv/
+venv*/
 .env
 
-# IDE / temp
+# IDE / OS
 .vscode/
 .idea/
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
 # Logs
 *.log
