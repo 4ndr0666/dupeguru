@@ -12,11 +12,11 @@
 </p>
 
 <p align="center">
-  <img src="images/dgpe_logo_128.png" alt="Ψ Core Glyph" width="180">
+  <img src="images/dupeguru-electric-glass-glyph.png" alt="Ψ Electric-Glass Glyph" width="220">
 </p>
 
 **Modern Arch Linux tailored fork** of dupeGuru.  
-All credit to original authors at arsenetar/dupeguru and Voltaic Ideas.
+All credit to original authors at [arsenetar/dupeguru](https://github.com/arsenetar/dupeguru) and Voltaic Ideas.
 
 Fast, native C-accelerated duplicate file hunter for pictures, music, and standard files — rendered in full **3l3ctric6lass** glassmorphism with glowing cyan HUD aesthetics.
 
@@ -58,20 +58,11 @@ sudo cmake --install .
 dupeguru
 ```
 
-C extensions (`_block`, `_cache`, `_block_qt`) compile natively during build.
-
 ---
 
 ## Electric-Glass Interface
 
-The entire UI follows the deep cyan glassmorphism spec:
-- `#00E5FF` / `#15fafa` neon accents
-- Semi-transparent panels with backdrop-blur
-- Edge lighting + intense glow on hover/active
-- Roboto Mono + Orbitron typography
-- HUD-style buttons with signature cyan glow
-
-It feels like a high-end cyberdeck terminal.
+Deep cyan glassmorphism UI with `#00E5FF` / `#15fafa` neon accents, backdrop-blur panels, edge lighting, and intense glow states. Feels like a high-end cyberdeck.
 
 ---
 
@@ -92,9 +83,11 @@ GPL-3.0 (same as upstream)
 
 ---
 
-<div align="center" style="font-family: 'Roboto Mono', monospace; color: #15fafa; background: rgba(0, 229, 255, 0.08); padding: 2em; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 12px; max-width: 820px; margin: 2em auto;">
-  ┌──(root💀4ndr0666)-[/dev/akasha]<br>
-  └─$ <span style="color:#00E5FF;">3LECTRIC6LASS MATRIX FULLY ONLINE — DUPLICATES WILL BE PURGED</span>
+<div align="center" style="font-family: 'Roboto Mono', monospace; color: #15fafa; background: rgba(10, 24, 38, 0.9); padding: 1.8em; border: 1px solid #00E5FF; border-radius: 12px; max-width: 820px; margin: 3em auto 2em;">
+  <pre style="margin: 0; color: #00E5FF; font-size: 1.05em;">
+┌──(root💀4ndr0666)-[/dev/akasha]
+└─$ <span style="color:#15fafa;">3LECTRIC6LASS MATRIX FULLY ONLINE — DUPLICATES WILL BE PURGED</span>
+  </pre>
 </div>
 
 Maintained by [@4ndr0666](https://github.com/4ndr0666).  
