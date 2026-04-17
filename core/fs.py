@@ -16,7 +16,6 @@ import os
 from math import floor
 import logging
 import sqlite3
-from sys import platform
 from threading import Lock
 from typing import Any, AnyStr, Union, Callable
 
@@ -54,9 +53,6 @@ CHUNK_SIZE = 1024 * 1024  # 1 MiB
 
 # Minimum size below which partial hashing is not used
 MIN_FILE_SIZE = 3 * CHUNK_SIZE  # 3MiB, because we take 3 samples
-
-# Partial hashing offset and size
-PARTIAL_OFFSET_SIZE = (0x4000, 0x4000)
 
 
 class FSError(Exception):
@@ -101,71 +97,59 @@ class FilesDB:
     schema_version = 1
     schema_version_description = "Changed from md5 to xxhash if available."
 
-    create_table_query = """CREATE TABLE IF NOT EXISTS files (path TEXT PRIMARY KEY, size INTEGER, mtime_ns INTEGER,
-        entry_dt DATETIME, digest BLOB, digest_partial BLOB, digest_samples BLOB)"""
+    create_table_query = "CREATE TABLE IF NOT EXISTS files (path TEXT PRIMARY KEY, size INTEGER, mtime_ns INTEGER, entry_dt DATETIME, digest BLOB, digest_partial BLOB, digest_samples BLOB)"
     drop_table_query = "DROP TABLE IF EXISTS files;"
     select_query = "SELECT {key} FROM files WHERE path=:path AND size=:size and mtime_ns=:mtime_ns"
-    select_query_ignore_mtime = "SELECT {key} FROM files WHERE path=:path AND size=:size"
     insert_query = """
-        INSERT INTO files (path, size, mtime_ns, entry_dt, {key})
-        VALUES (:path, :size, :mtime_ns, datetime('now'), :value)
+        INSERT INTO files (path, size, mtime_ns, entry_dt, {key}) VALUES (:path, :size, :mtime_ns, datetime('now'), :value)
         ON CONFLICT(path) DO UPDATE SET size=:size, mtime_ns=:mtime_ns, entry_dt=datetime('now'), {key}=:value;
     """
 
-    ignore_mtime = False
-
     def __init__(self):
         self.conn = None
+        self.cur = None
         self.lock = None
 
     def connect(self, path: Union[AnyStr, os.PathLike]) -> None:
-        if platform.startswith("gnu0"):
-            self.conn = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
-        else:
-            self.conn = sqlite3.connect(path, check_same_thread=False)
+        self.conn = sqlite3.connect(path, check_same_thread=False)
+        self.cur = self.conn.cursor()
         self.lock = Lock()
         self._check_upgrade()
 
     def _check_upgrade(self) -> None:
-        with self.lock, self.conn as conn:
-            has_schema = conn.execute(
+        with self.lock:
+            has_schema = self.cur.execute(
                 "SELECT NAME FROM sqlite_master WHERE type='table' AND name='schema_version'"
             ).fetchall()
             version = None
             if has_schema:
-                version = conn.execute("SELECT version FROM schema_version ORDER BY version DESC").fetchone()[0]
+                version = self.cur.execute("SELECT version FROM schema_version ORDER BY version DESC").fetchone()[0]
             else:
-                conn.execute("CREATE TABLE schema_version (version int PRIMARY KEY, description TEXT)")
+                self.cur.execute("CREATE TABLE schema_version (version int PRIMARY KEY, description TEXT)")
             if version != self.schema_version:
-                conn.execute(self.drop_table_query)
-                conn.execute(
+                self.cur.execute(self.drop_table_query)
+                self.cur.execute(
                     "INSERT OR REPLACE INTO schema_version VALUES (:version, :description)",
                     {"version": self.schema_version, "description": self.schema_version_description},
                 )
-            conn.execute(self.create_table_query)
+            self.cur.execute(self.create_table_query)
+            self.conn.commit()
 
     def clear(self) -> None:
-        with self.lock, self.conn as conn:
-            conn.execute(self.drop_table_query)
-            conn.execute(self.create_table_query)
+        with self.lock:
+            self.cur.execute(self.drop_table_query)
+            self.cur.execute(self.create_table_query)
 
     def get(self, path: Path, key: str) -> Union[bytes, None]:
         stat = path.stat()
         size = stat.st_size
         mtime_ns = stat.st_mtime_ns
         try:
-            with self.conn as conn:
-                if self.ignore_mtime:
-                    cursor = conn.execute(
-                        self.select_query_ignore_mtime.format(key=key), {"path": str(path), "size": size}
-                    )
-                else:
-                    cursor = conn.execute(
-                        self.select_query.format(key=key),
-                        {"path": str(path), "size": size, "mtime_ns": mtime_ns},
-                    )
-                result = cursor.fetchone()
-                cursor.close()
+            with self.lock:
+                self.cur.execute(
+                    self.select_query.format(key=key), {"path": str(path), "size": size, "mtime_ns": mtime_ns}
+                )
+                result = self.cur.fetchone()
 
             if result:
                 return result[0]
@@ -179,8 +163,8 @@ class FilesDB:
         size = stat.st_size
         mtime_ns = stat.st_mtime_ns
         try:
-            with self.lock, self.conn as conn:
-                conn.execute(
+            with self.lock:
+                self.cur.execute(
                     self.insert_query.format(key=key),
                     {"path": str(path), "size": size, "mtime_ns": mtime_ns, "value": value},
                 )
@@ -193,6 +177,7 @@ class FilesDB:
 
     def close(self) -> None:
         with self.lock:
+            self.cur.close()
             self.conn.close()
 
 
@@ -206,7 +191,7 @@ class File:
     # Slots for File make us save quite a bit of memory. In a memory test I've made with a lot of
     # files, I saved 35% memory usage with "unread" files (no _read_info() call) and gains become
     # even greater when we take into account read attributes (70%!). Yeah, it's worth it.
-    __slots__ = ("path", "unicode_path", "is_ref", "words") + tuple(INITIAL_INFO.keys())
+    __slots__ = ("path", "is_ref", "words") + tuple(INITIAL_INFO.keys())
 
     def __init__(self, path):
         for attrname in self.INITIAL_INFO:
@@ -217,8 +202,6 @@ class File:
             self.mtime = nonone(path.stat().st_mtime, 0)
         else:
             self.path = path
-        if self.path:
-            self.unicode_path = str(self.path)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {str(self.path)}>"
@@ -252,9 +235,14 @@ class File:
 
     def _calc_digest_partial(self):
         # type: () -> bytes
+
+        # This offset is where we should start reading the file to get a partial hash
+        # For audio file, it should be where audio data starts
+        offset, size = (0x4000, 0x4000)
+
         with self.path.open("rb") as fp:
-            fp.seek(PARTIAL_OFFSET_SIZE[0])
-            partial_data = fp.read(PARTIAL_OFFSET_SIZE[1])
+            fp.seek(offset)
+            partial_data = fp.read(size)
             return hasher(partial_data).digest()
 
     def _calc_digest_samples(self) -> bytes:
@@ -285,11 +273,7 @@ class File:
         elif field == "digest_partial":
             self.digest_partial = filesdb.get(self.path, "digest_partial")
             if self.digest_partial is None:
-                # If file is smaller than partial requirements just use the full digest
-                if self.size < PARTIAL_OFFSET_SIZE[0] + PARTIAL_OFFSET_SIZE[1]:
-                    self.digest_partial = self.digest
-                else:
-                    self.digest_partial = self._calc_digest_partial()
+                self.digest_partial = self._calc_digest_partial()
                 filesdb.put(self.path, "digest_partial", self.digest_partial)
         elif field == "digest":
             self.digest = filesdb.get(self.path, "digest")
@@ -300,7 +284,7 @@ class File:
             size = self.size
             # Might as well hash such small files entirely.
             if size <= MIN_FILE_SIZE:
-                self.digest_samples = self.digest
+                setattr(self, field, self.digest)
                 return
             self.digest_samples = filesdb.get(self.path, "digest_samples")
             if self.digest_samples is None:
@@ -322,14 +306,6 @@ class File:
     def can_handle(cls, path):
         """Returns whether this file wrapper class can handle ``path``."""
         return not path.is_symlink() and path.is_file()
-
-    def exists(self) -> bool:
-        """Safely check if the underlying file exists, treat error as non-existent"""
-        try:
-            return self.path.exists()
-        except OSError as ex:
-            logging.warning(f"Checking {self.path} raised: {ex}")
-            return False
 
     def rename(self, newname):
         if newname == self.name:

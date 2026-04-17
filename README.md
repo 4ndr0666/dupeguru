@@ -8,75 +8,91 @@
   DUPEGURU
 </h1>
 <p align="center" style="font-family: 'Roboto Mono', monospace; color: #15fafa; font-size: 1.15em;">
-  NEON-CYAN DUPLICATE ANNIHILATOR // ELECTRIC-GLASS EDITION
+  DUPLICATE ANNIHILATOR // ARCH EDITION
 </p>
 
 <p align="center">
   <img src="images/dupeguru-electric-glass-glyph.png" alt="Ψ Electric-Glass Glyph" width="220">
 </p>
 
-**Modern Arch Linux tailored fork** of dupeGuru.  
+**Arch Linux tailored fork** of dupeGuru.  
 All credit to original authors at [arsenetar/dupeguru](https://github.com/arsenetar/dupeguru) and Voltaic Ideas.
 
-Fast, native C-accelerated duplicate file hunter for pictures, music, and standard files — rendered in full **3l3ctric6lass** glassmorphism with glowing cyan HUD aesthetics.
+Fast, native C-accelerated duplicate file hunter for pictures, music, and standard files.
 
 ---
 
 ## Table of Contents
 
 - [Build Protocol](#build-protocol)
-- [Ignition Sequence](#ignition-sequence)
-- [Electric-Glass Interface](#electric-glass-interface)
-- [Development HUD](#development-hud)
+- [Python Ignition Sequence](#python-ignition-sequence)
+- [Make Ignition Sequence](#make-ignition-sequence)
 - [Packaging](#packaging)
+- [Testing](#testing)
 - [License](#license)
 
 ---
 
-## Build Protocol (CMake Only)
+## Build Protocol 
 
 ### Prerequisites (Arch Linux)
 ```bash
 sudo pacman -S python python-pyqt5 cmake python-distro python-mutagen \
-               python-polib python-send2trash python-xxhash
+               python-polib python-send2trash python-xxhash debhelper
 ```
 
-### Ignition Sequence
+### Python Ignition Sequence
 ```bash
 git clone https://github.com/4ndr0666/dupeguru.git
 cd dupeguru
 
-rm -rf build/
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --verbose
-sudo cmake --install .
+python3 -m venv --system-site-packages ./env
+source ./env/bin/activate
+pip install -r requirements.txt
+python build.py
+python run.py
 ```
 
-**Launch the matrix:**
+### Make Ignition Sequence
 ```bash
-dupeguru
+git clone https://github.com/4ndr0666/dupeguru.git
+cd dupeguru
+
+make
+make run
 ```
 
----
-
-## Electric-Glass Interface
-
-Deep cyan glassmorphism UI with `#00E5FF` / `#15fafa` neon accents, backdrop-blur panels, edge lighting, and intense glow states. Feels like a high-end cyberdeck.
-
----
-
-## Development HUD
-
-- Python core in `core/` + `qt/`
-- C acceleration in `core/pe/modules/` and `qt/pe/modules/`
-- Rebuild with the CMake sequence above after changes
+**Install it:**
+```bash
+sudo make install
+```
 
 ---
 
 ## Packaging
 
-Clean PKGBUILD template available in the `pkg/` directory.
+bash -c "python3 -m venv --system-site-packages env && source env/bin/activate && pip install -r requirements.txt -r requirements-extra.txt && python build.py --clean && python package.py"
+
+*Clean command  for a fresh install:*
+```bash
+    $ python build.py --clean
+```
+
+## Testing
+
+The complete test suite is run with [Tox 1.7+][tox]. If you have it installed system-wide, you
+don't even need to set up a virtualenv. Just `cd` into the root project folder and run `tox`.
+
+If you don't have Tox system-wide, install it in your virtualenv with `pip install tox` and then
+run `tox`.
+
+You can also run automated tests without Tox. Extra requirements for running tests are in
+`requirements-extra.txt`. So, you can do `pip install -r requirements-extra.txt` inside your
+virtualenv and then `py.test core hscommon`
+
+[dupeguru]: https://dupeguru.voltaicideas.net/
+[documentation]: http://dupeguru.voltaicideas.net/help/en/
+[tox]: https://tox.readthedocs.org/en/latest/
 
 ## License
 GPL-3.0 (same as upstream)
@@ -86,11 +102,10 @@ GPL-3.0 (same as upstream)
 <div align="center" style="font-family: 'Roboto Mono', monospace; color: #15fafa; background: rgba(10, 24, 38, 0.9); padding: 1.8em; border: 1px solid #00E5FF; border-radius: 12px; max-width: 820px; margin: 3em auto 2em;">
   <pre style="margin: 0; color: #00E5FF; font-size: 1.05em;">
 ┌──(root💀4ndr0666)-[/dev/akasha]
-└─$ <span style="color:#15fafa;">3LECTRIC6LASS MATRIX FULLY ONLINE — DUPLICATES WILL BE PURGED</span>
+└─$ <span style="color:#15fafa;">DUPLICATES WILL BE PURGED</span>
   </pre>
 </div>
 
 Maintained by [@4ndr0666](https://github.com/4ndr0666).  
-Issues and PRs welcome in the Logosphere.
 
 ─── ⊰ 💀 • - ⦑ 4NDR0666OS ⦒ - • 💀 ⊱ ───

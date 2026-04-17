@@ -4,7 +4,7 @@ hscommon
 .. toctree::
     :maxdepth: 2
     :glob:
-
+    
     build
     conflict
     desktop
@@ -13,3 +13,4 @@ hscommon
     util
     jobprogress/*
     gui/*
+

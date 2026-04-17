@@ -10,7 +10,6 @@ import logging
 import re
 import os
 import os.path as op
-from errno import EISDIR, EACCES
 from xml.etree import ElementTree as ET
 
 from hscommon.jobprogress.job import nulljob
@@ -377,8 +376,8 @@ class Results(Markable):
             do_write(outfile)
         except OSError as e:
             # If our OSError is because dest is already a directory, we want to handle that. 21 is
-            # the code we get on OS X and Linux (EISDIR), 13 is what we get on Windows (EACCES).
-            if e.errno in (EISDIR, EACCES):
+            # the code we get on OS X and Linux, 13 is what we get on Windows.
+            if e.errno in {21, 13}:
                 p = str(outfile)
                 dirname, basename = op.split(p)
                 otherfiles = os.listdir(dirname)

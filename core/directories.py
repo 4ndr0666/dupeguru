@@ -84,11 +84,10 @@ class Directories:
             for denied_path_re in self._exclude_list.compiled:
                 if denied_path_re.match(str(path.name)):
                     return DirectoryState.EXCLUDED
-            return DirectoryState.NORMAL
+            # return # We still use the old logic to force state on hidden dirs
         # Override this in subclasses to specify the state of some special folders.
         if path.name.startswith("."):
             return DirectoryState.EXCLUDED
-        return DirectoryState.NORMAL
 
     def _get_files(self, from_path, fileclasses, j):
         try:
@@ -187,7 +186,7 @@ class Directories:
         for path in self._dirs:
             for file in self._get_files(path, fileclasses=fileclasses, j=j):
                 file_count += 1
-                if not isinstance(j, job.NullJob):
+                if type(j) != job.NullJob:
                     j.set_progress(-1, tr("Collected {} files to scan").format(file_count))
                 yield file
 
@@ -203,7 +202,7 @@ class Directories:
             from_folder = folderclass(path)
             for folder in self._get_folders(from_folder, j):
                 folder_count += 1
-                if not isinstance(j, job.NullJob):
+                if type(j) != job.NullJob:
                     j.set_progress(-1, tr("Collected {} folders to scan").format(folder_count))
                 yield folder
 
@@ -215,7 +214,7 @@ class Directories:
         # direct match? easy result.
         if path in self.states:
             return self.states[path]
-        state = self._default_state_for_path(path)
+        state = self._default_state_for_path(path) or DirectoryState.NORMAL
         # Save non-default states in cache, necessary for _get_files()
         if state != DirectoryState.NORMAL:
             self.states[path] = state
