@@ -52,6 +52,9 @@ pip install -r requirements.txt
 python build.py
 python run.py
 ```
+> **Note:** `run.py` forces `QT_QPA_PLATFORM=xcb` by default (via `os.environ.setdefault`),
+> since native Wayland currently fails to render the menu bar/toolbar on some compositors.
+> Set `QT_QPA_PLATFORM` yourself beforehand to override this.
 
 ### Make Ignition Sequence
 ```bash

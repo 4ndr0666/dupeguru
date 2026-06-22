@@ -6,8 +6,18 @@
 # http://www.gnu.org/licenses/gpl-3.0.html
 
 import sys
+import os
 import os.path as op
 import gc
+
+# As of this writing, native Wayland (qt.qpa.wayland / xdg-shell) fails to paint
+# the menu bar and toolbar on at least some compositors, leaving a blank window
+# with no chrome. XCB (X11/XWayland) renders correctly on both X11 and XWayland.
+# setdefault() means an explicit QT_QPA_PLATFORM already set in the environment
+# is respected and not overridden here. This must run before any PyQt5 import,
+# since the platform plugin is selected at Qt's first initialization. Remove
+# this override once upstream Qt/Wayland fixes the underlying issue.
+os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon, QPixmap
