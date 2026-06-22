@@ -108,13 +108,21 @@ install: all pyc
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 # run.py's own shebang isn't reliable here: it targets the system python, which may not be the
 # interpreter the C extensions above were just built against (pyenv, a non-system python3, etc).
-# A wrapper that execs $(PYTHON) explicitly guarantees the installed launcher uses the same
-# interpreter as the build, instead of whatever /usr/bin/python3 happens to be.
+# A wrapper that execs the build's own interpreter explicitly guarantees the installed launcher
+# matches what built the extensions, instead of whatever /usr/bin/python3 happens to be.
+# Resolve VENV_PYTHON (not PYTHON) here, not a fresh PATH lookup of PYTHON: VENV_PYTHON is
+# already the exact interpreter modules/pyc just ran under. command -v resolves it whether it's
+# a bare name (NO_VENV) or a relative path (the venv case); readlink -f / realpath then makes
+# that result absolute and canonical so it survives independent of cwd, PATH, or env/ existing.
+# Re-resolving PYTHON fresh inside this recipe would be wrong: under sudo, a restricted PATH
+# (e.g. secure_path) can omit a pyenv shim directory and silently find a different interpreter
+# than the one that actually built the extensions.
 # rm -f first: if bin/dupeguru is a stale symlink (e.g. from a prior install), a bare '>' redirect
 # follows the link and overwrites whatever it points to instead of replacing the link itself.
 	rm -f ${DESTDIR}${PREFIX}/bin/dupeguru
 	printf '#!/bin/sh\nexec "%s" "%s/share/dupeguru/run.py" "$$@"\n' \
-		"$$(command -v ${PYTHON})" "${PREFIX}" > ${DESTDIR}${PREFIX}/bin/dupeguru
+		"$$(readlink -f "$$(command -v ${VENV_PYTHON})" 2>/dev/null || realpath "$$(command -v ${VENV_PYTHON})")" \
+		"${PREFIX}" > ${DESTDIR}${PREFIX}/bin/dupeguru
 	chmod 755 ${DESTDIR}${PREFIX}/bin/dupeguru
 	mkdir -p ${DESTDIR}${PREFIX}/share/applications
 	cp -f pkg/dupeguru.desktop ${DESTDIR}${PREFIX}/share/applications
