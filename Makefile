@@ -102,6 +102,7 @@ normpo: | env
 install: all pyc
 	mkdir -p ${DESTDIR}${PREFIX}/share/dupeguru
 	cp -rf ${packages} locale ${DESTDIR}${PREFIX}/share/dupeguru
+	rm -f ${DESTDIR}${PREFIX}/share/dupeguru/run.py
 	cp -f run.py ${DESTDIR}${PREFIX}/share/dupeguru/run.py
 	chmod 755 ${DESTDIR}${PREFIX}/share/dupeguru/run.py
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -109,6 +110,9 @@ install: all pyc
 # interpreter the C extensions above were just built against (pyenv, a non-system python3, etc).
 # A wrapper that execs $(PYTHON) explicitly guarantees the installed launcher uses the same
 # interpreter as the build, instead of whatever /usr/bin/python3 happens to be.
+# rm -f first: if bin/dupeguru is a stale symlink (e.g. from a prior install), a bare '>' redirect
+# follows the link and overwrites whatever it points to instead of replacing the link itself.
+	rm -f ${DESTDIR}${PREFIX}/bin/dupeguru
 	printf '#!/bin/sh\nexec "%s" "%s/share/dupeguru/run.py" "$$@"\n' \
 		"$$(command -v ${PYTHON})" "${PREFIX}" > ${DESTDIR}${PREFIX}/bin/dupeguru
 	chmod 755 ${DESTDIR}${PREFIX}/bin/dupeguru
