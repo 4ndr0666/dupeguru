@@ -105,7 +105,13 @@ install: all pyc
 	cp -f run.py ${DESTDIR}${PREFIX}/share/dupeguru/run.py
 	chmod 755 ${DESTDIR}${PREFIX}/share/dupeguru/run.py
 	mkdir -p ${DESTDIR}${PREFIX}/bin
-	ln -sf ${PREFIX}/share/dupeguru/run.py ${DESTDIR}${PREFIX}/bin/dupeguru
+# run.py's own shebang isn't reliable here: it targets the system python, which may not be the
+# interpreter the C extensions above were just built against (pyenv, a non-system python3, etc).
+# A wrapper that execs $(PYTHON) explicitly guarantees the installed launcher uses the same
+# interpreter as the build, instead of whatever /usr/bin/python3 happens to be.
+	printf '#!/bin/sh\nexec "%s" "%s/share/dupeguru/run.py" "$$@"\n' \
+		"$$(command -v ${PYTHON})" "${PREFIX}" > ${DESTDIR}${PREFIX}/bin/dupeguru
+	chmod 755 ${DESTDIR}${PREFIX}/bin/dupeguru
 	mkdir -p ${DESTDIR}${PREFIX}/share/applications
 	cp -f pkg/dupeguru.desktop ${DESTDIR}${PREFIX}/share/applications
 	mkdir -p ${DESTDIR}${PREFIX}/share/pixmaps
