@@ -46,8 +46,14 @@ vpath %.mo $(localedirs)
 all: | env i18n modules qt/dg_rc.py 
 	@echo "Build complete! You can run dupeGuru with 'make run'"
 
+# QT_QPA_PLATFORM=xcb forces PyQt5 onto the XCB (X11/XWayland) backend instead of
+# native Wayland. As of this writing, native Wayland (qt.qpa.wayland / xdg-shell)
+# fails to paint the menu bar and toolbar on at least some compositors, leaving a
+# blank window with no chrome. XCB renders correctly under both X11 and XWayland.
+# Remove this override (or set QT_QPA_PLATFORM yourself) once upstream Qt/Wayland
+# fixes the underlying issue.
 run:
-	$(VENV_PYTHON) run.py
+	QT_QPA_PLATFORM=xcb $(VENV_PYTHON) run.py
 
 pyc: | env
 	${VENV_PYTHON} -m compileall ${packages}
