@@ -6,11 +6,11 @@
 
 from pathlib import Path
 import sys
+import subprocess
 from optparse import OptionParser
 import shutil
 from multiprocessing import Pool
 
-from setuptools import sandbox
 from hscommon import sphinxgen
 from hscommon.build import (
     add_to_pythonpath,
@@ -117,8 +117,11 @@ def build_normpo():
 
 def build_pe_modules():
     print("Building PE Modules")
-    # Leverage setup.py to build modules
-    sandbox.run_setup("setup.py", ["build_ext", "--inplace"])
+    # Leverage setup.py to build modules. setuptools.sandbox was removed in
+    # setuptools 58.0.0, so we invoke setup.py as a subprocess instead, using
+    # the same interpreter that's running this script.
+    command = [sys.executable, "setup.py", "build_ext", "--inplace"]
+    subprocess.run(command, check=True, timeout=600)
 
 
 def build_normal():
